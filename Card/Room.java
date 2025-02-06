@@ -3,24 +3,29 @@ package Card;
 public abstract class Room {
     protected int roomNumber;
     protected boolean isLocked;
-    public Room(int roomNumber){
+
+    public Room(int roomNumber) {
         this.roomNumber = roomNumber;
         this.isLocked = true;
     }
 
-    public int getRoomNumber(){
+    public int getRoomNumber() {
         return roomNumber;
     }
-    public boolean isLocked(){
+
+    public boolean isLocked() {
         return isLocked();
     }
-    public void lock(){
+
+    public void lock() {
         isLocked = true;
-        System.out.println("Room "+roomNumber+" is locked");
+        System.out.println("Room " + roomNumber + " is locked");
     }
-    public void unlock(){
+
+    public void unlock() {
         isLocked = false;
-        System.out.println("Room "+roomNumber+" is unlocked");
+        System.out.println("Room " + roomNumber + " is unlocked");
     }
+
     public abstract void displayRoominfo();
 }
