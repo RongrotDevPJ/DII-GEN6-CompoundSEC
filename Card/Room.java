@@ -14,7 +14,7 @@ public abstract class Room {
     }
 
     public boolean isLocked() {
-        return isLocked();
+        return isLocked; // Fixed the issue
     }
 
     public void lock() {
@@ -27,5 +27,5 @@ public abstract class Room {
         System.out.println("Room " + roomNumber + " is unlocked");
     }
 
-    public abstract void displayRoominfo();
+    public abstract void displayRoomInfo();
 }

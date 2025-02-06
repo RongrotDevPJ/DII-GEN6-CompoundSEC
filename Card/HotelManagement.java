@@ -1,16 +1,23 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.time.LocalDateTime;
 
 public class HotelManagement {
     private Map<Integer, Room> rooms = new HashMap<>();
     private Map<Integer, AccessCard> cards = new HashMap<>();
+
     public void addRoom(Room room) {
         rooms.put(room.getRoomNumber(), room);
         System.out.println("Room " + room.getRoomNumber() + " added to the system.");
     }
-    public void createCard(int cardID) {
-        cards.put(cardID, new AccessCard(cardID));
-        System.out.println("Access Card " + cardID + " created.");
+    public void createGuestCard(int cardID, int roomNumber, int hoursValid) {
+        if (rooms.containsKey(roomNumber)) {
+            LocalDateTime expirationTime = LocalDateTime.now().plusHours(hoursValid);
+            GuestAccessCard guestCard = new GuestAccessCard(cardID, roomNumber, expirationTime);
+            cards.put(cardID, guestCard);
+            System.out.println("Guest Access Card " + cardID + " created for Room " + roomNumber);
+        } else {
+            System.out.println("Invalid room number.");
+        }
     }
     public void grantAccess(int cardID, int roomNumber) {
         if (cards.containsKey(cardID) && rooms.containsKey(roomNumber)) {
@@ -30,6 +37,13 @@ public class HotelManagement {
         if (cards.containsKey(cardID) && rooms.containsKey(roomNumber)) {
             AccessCard card = cards.get(cardID);
             Room room = rooms.get(roomNumber);
+            if (card instanceof GuestAccessCard) {
+                GuestAccessCard guestCard = (GuestAccessCard) card;
+                if (!guestCard.isValid()) {
+                    System.out.println("Access denied! Card expired.");
+                    return;
+                }
+            }
             if (card.hasAccess(roomNumber)) {
                 room.unlock();
                 System.out.println("Card " + cardID + " used to unlock Room " + roomNumber + ".");
