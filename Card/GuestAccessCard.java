@@ -1,24 +1,33 @@
 package Card;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuestAccessCard extends AccessCard {
-    private int roomNumber;
-    private LocalDateTime expirationTime;
-
-    public GuestAccessCard(int cardID, int roomNumber, LocalDateTime expirationTime) {
-        super(cardID);
-        this.roomNumber = roomNumber;
-        this.expirationTime = expirationTime;
-        addRoomAccess(roomNumber);
+    public GuestAccessCard(String cardID, String ownerName, List<String> accessRooms, LocalDateTime expirationTime) {
+        super(cardID, ownerName, List.of(), new ArrayList<>(accessRooms), expirationTime);
     }
 
-    public boolean isValid() {
-        return LocalDateTime.now().isBefore(expirationTime);
+    @Override
+    public boolean validateAccess(int floor, String room) {
+        boolean granted = isActive && LocalDateTime.now().isBefore(expirationTime) && accessRooms.contains(room);
+        AccessAuditLog.logAccess(cardID, floor, room, granted);
+        return granted;
     }
 
-    public void displayInfo() {
-        System.out.println("Guest Access Card ID: " + getCardID());
-        System.out.println("Assigned Room: " + roomNumber);
-        System.out.println("Valid Until: " + expirationTime);
+    // เพิ่มสิทธิ์ห้องใหม่ให้ Guest
+    public void addRoomAccess(String room) {
+        if (!accessRooms.contains(room)) {
+            accessRooms.add(room);
+            AccessAuditLog.logCardAction(cardID, "Added access to Room " + room);
+        }
+    }
+
+    // ลบสิทธิ์ห้องของ Guest
+    public void removeRoomAccess(String room) {
+        if (accessRooms.contains(room)) {
+            accessRooms.remove(room);
+            AccessAuditLog.logCardAction(cardID, "Removed access to Room " + room);
+        }
     }
 }

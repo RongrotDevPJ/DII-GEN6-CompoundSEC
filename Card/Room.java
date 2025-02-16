@@ -1,31 +1,27 @@
 package Card;
+import java.util.HashMap;
+import java.util.Map;
 
-public abstract class Room {
-    protected int roomNumber;
-    protected boolean isLocked;
+public class Room {
+    private static final Map<String, Integer> rooms = new HashMap<>();
 
-    public Room(int roomNumber) {
-        this.roomNumber = roomNumber;
-        this.isLocked = true;
+    static {
+        rooms.put("101", 1);
+        rooms.put("102", 1);
+        rooms.put("103", 1);
+        rooms.put("201", 2);
+        rooms.put("202", 2);
+        rooms.put("203", 2);
+        rooms.put("301", 3);
+        rooms.put("302", 3);
+        rooms.put("303", 3);
     }
 
-    public int getRoomNumber() {
-        return roomNumber;
+    public static Integer getFloor(String roomID) {
+        return rooms.get(roomID);
     }
 
-    public boolean isLocked() {
-        return isLocked; // Fixed the issue
+    public static boolean isValidRoom(String roomID) {
+        return rooms.containsKey(roomID);
     }
-
-    public void lock() {
-        isLocked = true;
-        System.out.println("Room " + roomNumber + " is locked");
-    }
-
-    public void unlock() {
-        isLocked = false;
-        System.out.println("Room " + roomNumber + " is unlocked");
-    }
-
-    public abstract void displayRoomInfo();
 }

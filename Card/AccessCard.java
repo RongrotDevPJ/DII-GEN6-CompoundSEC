@@ -1,25 +1,35 @@
 package Card;
-import java.util.*; // Array & List
-public class AccessCard {
-    private int cardID;
-    private List<Integer> accessibleRoom;
+import java.time.LocalDateTime;
+import java.util.List;
 
-    public AccessCard(int cardID) {
+public abstract class AccessCard {
+    protected String cardID;
+    protected String ownerName;
+    protected List<Integer> accessFloors;
+    protected List<String> accessRooms;
+    protected LocalDateTime expirationTime;
+    protected boolean isActive;
+
+    public AccessCard(String cardID, String ownerName, List<Integer> accessFloors, List<String> accessRooms, LocalDateTime expirationTime) {
         this.cardID = cardID;
-        this.accessibleRoom = new ArrayList<>();
+        this.ownerName = ownerName;
+        this.accessFloors = accessFloors;
+        this.accessRooms = accessRooms;
+        this.expirationTime = expirationTime;
+        this.isActive = true;
     }
-    public int getCardID(){
+
+    public abstract boolean validateAccess(int floor, String room);
+
+    public void revokeAccess() {
+        this.isActive = false;
+    }
+
+    public String getCardID() {
         return cardID;
     }
-    public void addRoomAccess(int roomNumber){
-        accessibleRoom.add(roomNumber);
-        System.out.println("Card "+cardID+"granted access Room :"+roomNumber);
-    }
-    public void reRoomAccess(int roomNumber){
-        accessibleRoom.remove(roomNumber);//*****
-        System.out.println("Card "+cardID+"access remove Room :"+roomNumber);
-    }
-    public boolean hasAccess(int roomNumber){
-        return accessibleRoom.contains(roomNumber);
+
+    public boolean isActive() {
+        return isActive;
     }
 }
