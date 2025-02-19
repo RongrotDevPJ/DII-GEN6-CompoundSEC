@@ -8,43 +8,43 @@ public class Main {
         HotelManagement hotelManager = new HotelManagement();
         Scanner scanner = new Scanner(System.in);
 
-        // สร้างบัตรสำหรับแขก
         GuestAccessCard guestCard = hotelManager.createGuestCard("Guest123", Arrays.asList("203"), LocalDateTime.now().plusDays(3));
 
         while (true) {
             System.out.println("\n1. Check Guest Access");
             System.out.println("2. Add Room Access");
             System.out.println("3. Remove Room Access");
-            System.out.println("4. Exit");
+            System.out.println("4. Revoke Card");
+            System.out.println("5. Exit");
             System.out.print("Select an option: ");
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Clear buffer
+            scanner.nextLine();
 
-            if (choice == 4) break;
+            if (choice == 5) break;
 
             switch (choice) {
-                case 1: // ตรวจสอบการเข้าถึง
+                case 1:
                     System.out.print("Enter room number: ");
                     String room = scanner.nextLine();
                     int floor = Room.getFloor(room);
                     boolean granted = guestCard.validateAccess(floor, room);
                     System.out.println("Guest Access " + (granted ? "✅ Granted" : "❌ Denied"));
                     break;
-                case 2: // เพิ่มสิทธิ์ห้องให้ Guest
+                case 2:
                     System.out.print("Enter room number to add: ");
-                    String addRoom = scanner.nextLine();
-                    LogAdmin.addRoomToGuest(guestCard, addRoom);
+                    LogAdmin.addRoomToGuest(guestCard, scanner.nextLine());
                     break;
-                case 3: // ลบสิทธิ์ห้องของ Guest
+                case 3:
                     System.out.print("Enter room number to remove: ");
-                    String removeRoom = scanner.nextLine();
-                    LogAdmin.removeRoomFromGuest(guestCard, removeRoom);
+                    LogAdmin.removeRoomFromGuest(guestCard, scanner.nextLine());
+                    break;
+                case 4:
+                    guestCard.revokeAccess();
                     break;
                 default:
-                    System.out.println("❌ Invalid choice!");
+                    System.out.println("Invalid choice!");
             }
         }
-
         scanner.close();
     }
 }

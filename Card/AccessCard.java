@@ -23,6 +23,7 @@ public abstract class AccessCard {
 
     public void revokeAccess() {
         this.isActive = false;
+        AccessAuditLog.logCardAction(cardID, "Revoked");
     }
 
     public String getCardID() {

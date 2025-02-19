@@ -8,7 +8,7 @@ public class AccessAuditLog {
 
     public static void logAccess(String cardID, int floor, String room, boolean granted) {
         String entry = "Log Entry: Card " + cardID + " attempted to access Floor " + floor + ", Room " + room +
-                ". Access " + (granted ? "Granted" : "Denied") + " at " + LocalDateTime.now();
+                ". Access " + (granted ? "✅ Granted" : "❌ Denied") + " at " + LocalDateTime.now();
         logEntries.add(entry);
         System.out.println(entry);
     }

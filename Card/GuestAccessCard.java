@@ -15,7 +15,6 @@ public class GuestAccessCard extends AccessCard {
         return granted;
     }
 
-    // เพิ่มสิทธิ์ห้องใหม่ให้ Guest
     public void addRoomAccess(String room) {
         if (!accessRooms.contains(room)) {
             accessRooms.add(room);
@@ -23,7 +22,6 @@ public class GuestAccessCard extends AccessCard {
         }
     }
 
-    // ลบสิทธิ์ห้องของ Guest
     public void removeRoomAccess(String room) {
         if (accessRooms.contains(room)) {
             accessRooms.remove(room);
