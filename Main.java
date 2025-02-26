@@ -1,19 +1,18 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.util.*;
 
 // Abstract class for common properties and methods
 abstract class Card {
-    protected String cardId;
+    protected List<String> cardIds; // Multi-facades ID
     protected String userId;
     protected boolean active;
+    protected LocalDateTime expirationTime; // Time-based encryption
 
-    public Card(String cardId, String userId) {
-        this.cardId = cardId;
+    public Card(List<String> cardIds, String userId, LocalDateTime expirationTime) {
+        this.cardIds = cardIds;
         this.userId = userId;
         this.active = true;
+        this.expirationTime = expirationTime;
     }
 
     public abstract boolean hasAccess(String floor, String room);
@@ -22,12 +21,12 @@ abstract class Card {
         this.active = false;
     }
 
-    public String getCardId() {
-        return cardId;
+    public List<String> getCardIds() {
+        return cardIds;
     }
 
     public boolean isActive() {
-        return active;
+        return active && LocalDateTime.now().isBefore(expirationTime);
     }
 }
 
@@ -36,8 +35,8 @@ class AccessCard extends Card {
     private List<String> allowedFloors;
     private List<String> allowedRooms;
 
-    public AccessCard(String cardId, String userId) {
-        super(cardId, userId);
+    public AccessCard(List<String> cardIds, String userId, LocalDateTime expirationTime) {
+        super(cardIds, userId, expirationTime);
         this.allowedFloors = new ArrayList<>();
         this.allowedRooms = new ArrayList<>();
     }
@@ -52,7 +51,7 @@ class AccessCard extends Card {
 
     @Override
     public boolean hasAccess(String floor, String room) {
-        return active && allowedFloors.contains(floor) && allowedRooms.contains(room);
+        return isActive() && allowedFloors.contains(floor) && allowedRooms.contains(room);
     }
 }
 
@@ -66,10 +65,13 @@ class AccessControlSystem {
         accessLog = new ArrayList<>();
     }
 
-    public void addCard(String cardId, String userId) {
-        AccessCard card = new AccessCard(cardId, userId);
-        cardDatabase.put(cardId, card);
-        logAccess("Card created: " + cardId);
+    public void addCard(List<String> cardIds, String userId, int validDays) {
+        LocalDateTime expirationTime = LocalDateTime.now().plusDays(validDays);
+        AccessCard card = new AccessCard(cardIds, userId, expirationTime);
+        for (String id : cardIds) {
+            cardDatabase.put(id, card);
+        }
+        logAccess("Card created: " + cardIds);
     }
 
     public void modifyCard(String cardId, String floor, String room) {
@@ -133,11 +135,13 @@ public class Main {
 
                 switch (choice) {
                     case 1:
-                        System.out.print("Enter Card ID: ");
-                        String newCardId = scanner.nextLine();
+                        System.out.print("Enter Card IDs (comma-separated): ");
+                        List<String> newCardIds = Arrays.asList(scanner.nextLine().split(","));
                         System.out.print("Enter User ID: ");
                         String userId = scanner.nextLine();
-                        system.addCard(newCardId, userId);
+                        System.out.print("Enter Validity (days): ");
+                        int validDays = Integer.parseInt(scanner.nextLine());
+                        system.addCard(newCardIds, userId, validDays);
                         break;
                     case 2:
                         System.out.print("Enter Card ID to modify: ");
