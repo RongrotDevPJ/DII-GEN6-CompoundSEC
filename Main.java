@@ -1,11 +1,12 @@
 import java.time.LocalDateTime;
 import java.util.*;
 
-// Abstract class for common properties and methods
+// Draft 1: Abstraction - ใช้ Abstract Class กำหนดโครงสร้างของบัตร
 abstract class Card {
+    // Draft 2: Encapsulation - ซ่อนข้อมูลสำคัญ ไม่ให้แก้ไขโดยตรง
     protected List<String> cardIds; // Multi-facades ID
     protected String userId;
-    protected boolean active;
+    private boolean active;
     protected LocalDateTime expirationTime; // Time-based encryption
 
     public Card(List<String> cardIds, String userId, LocalDateTime expirationTime) {
@@ -15,12 +16,14 @@ abstract class Card {
         this.expirationTime = expirationTime;
     }
 
+    // Draft 4: Polymorphism - เมธอดนี้จะถูก override ในคลาสลูก
     public abstract boolean hasAccess(String floor, String room);
 
     public void revokeAccess() {
         this.active = false;
     }
 
+    // Draft 2: Encapsulation - ใช้ Getter เพื่อควบคุมการเข้าถึงข้อมูล
     public List<String> getCardIds() {
         return cardIds;
     }
@@ -30,7 +33,7 @@ abstract class Card {
     }
 }
 
-// Concrete class for AccessCard with floor and room access
+// Draft 5: Method Overloading - รองรับการสร้างบัตรหลายแบบ
 class AccessCard extends Card {
     private List<String> allowedFloors;
     private List<String> allowedRooms;
@@ -41,6 +44,10 @@ class AccessCard extends Card {
         this.allowedRooms = new ArrayList<>();
     }
 
+    public AccessCard(String cardId, String userId, LocalDateTime expirationTime) {
+        this(List.of(cardId), userId, expirationTime);
+    }
+
     public void addFloor(String floor) {
         allowedFloors.add(floor);
     }
@@ -49,15 +56,16 @@ class AccessCard extends Card {
         allowedRooms.add(room);
     }
 
+    // Draft 6: Dynamic Binding - เมธอดนี้จะถูกเรียกเมื่อใช้ Polymorphism
     @Override
     public boolean hasAccess(String floor, String room) {
         return isActive() && allowedFloors.contains(floor) && allowedRooms.contains(room);
     }
 }
 
-// Access Control System class to manage cards and logs
+// Draft 3: Upcasting - ใช้ Map<String, Card> แทน AccessCard เพื่อรองรับบัตรอื่น ๆ
 class AccessControlSystem {
-    private Map<String, AccessCard> cardDatabase;
+    private Map<String, Card> cardDatabase;
     private List<String> accessLog;
 
     public AccessControlSystem() {
@@ -65,9 +73,9 @@ class AccessControlSystem {
         accessLog = new ArrayList<>();
     }
 
-    public void addCard(List<String> cardIds, String userId, int validDays) {
-        LocalDateTime expirationTime = LocalDateTime.now().plusDays(validDays);
-        AccessCard card = new AccessCard(cardIds, userId, expirationTime);
+    // Draft 12: Factory Pattern - ใช้ Factory สร้างบัตรใหม่
+    public void addCard(String type, List<String> cardIds, String userId, int validDays) {
+        Card card = CardFactory.createCard(type, cardIds, userId, validDays);
         for (String id : cardIds) {
             cardDatabase.put(id, card);
         }
@@ -75,10 +83,10 @@ class AccessControlSystem {
     }
 
     public void modifyCard(String cardId, String floor, String room) {
-        AccessCard card = cardDatabase.get(cardId);
-        if (card != null) {
-            card.addFloor(floor);
-            card.addRoom(room);
+        Card card = cardDatabase.get(cardId);
+        if (card instanceof AccessCard) {
+            ((AccessCard) card).addFloor(floor);
+            ((AccessCard) card).addRoom(room);
             logAccess("Card modified: " + cardId);
         } else {
             System.out.println("Card not found!");
@@ -86,7 +94,7 @@ class AccessControlSystem {
     }
 
     public void revokeCard(String cardId) {
-        AccessCard card = cardDatabase.get(cardId);
+        Card card = cardDatabase.get(cardId);
         if (card != null) {
             card.revokeAccess();
             logAccess("Card revoked: " + cardId);
@@ -96,7 +104,7 @@ class AccessControlSystem {
     }
 
     public void attemptAccess(String cardId, String floor, String room) {
-        AccessCard card = cardDatabase.get(cardId);
+        Card card = cardDatabase.get(cardId);
         boolean success = card != null && card.hasAccess(floor, room);
         logAccess("Access attempt: " + cardId + " to " + floor + ", " + room + " - " + (success ? "Success" : "Failed"));
     }
@@ -114,7 +122,19 @@ class AccessControlSystem {
     }
 }
 
-// Main class to run the program
+// Draft 12: Factory Pattern - สร้างบัตรประเภทต่าง ๆ
+class CardFactory {
+    public static Card createCard(String type, List<String> cardIds, String userId, int validDays) {
+        LocalDateTime expirationTime = LocalDateTime.now().plusDays(validDays);
+        return switch (type) {
+            case "AccessCard" -> new AccessCard(cardIds, userId, expirationTime);
+            default -> throw new IllegalArgumentException("Unknown card type");
+        };
+    }
+}
+
+
+// Draft 11: Use Case Diagram - ฟังก์ชันหลักในระบบ
 public class Main {
     public static void main(String[] args) {
         AccessControlSystem system = new AccessControlSystem();
@@ -135,13 +155,15 @@ public class Main {
 
                 switch (choice) {
                     case 1:
+                        System.out.print("Enter Card Type: ");
+                        String type = scanner.nextLine();
                         System.out.print("Enter Card IDs (comma-separated): ");
                         List<String> newCardIds = Arrays.asList(scanner.nextLine().split(","));
                         System.out.print("Enter User ID: ");
                         String userId = scanner.nextLine();
                         System.out.print("Enter Validity (days): ");
                         int validDays = Integer.parseInt(scanner.nextLine());
-                        system.addCard(newCardIds, userId, validDays);
+                        system.addCard(type, newCardIds, userId, validDays);
                         break;
                     case 2:
                         System.out.print("Enter Card ID to modify: ");
@@ -176,10 +198,8 @@ public class Main {
                     default:
                         System.out.println("Invalid option! Please try again.");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a number.");
             } catch (Exception e) {
-                System.out.println("An error occurred: " + e.getMessage());
+                System.out.println("Error: " + e.getMessage());
             }
         }
     }
